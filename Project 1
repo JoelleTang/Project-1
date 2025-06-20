@@ -1,0 +1,578 @@
+import time
+
+system_name = "   Record Store Inventory Management System   "
+stored_username = "123"
+stored_pwd = "456"
+
+# Layout for system name
+print("-" * len(system_name))
+print(system_name)
+print("-" * len(system_name) + "\n")
+
+# Require user login before using system
+print("Enter the username and Password.")
+username = input("Username: ")
+password = input("Password: ")
+
+if username == stored_username and password == stored_pwd:
+    print("Logging In... \n")
+    time.sleep(1)
+
+else:
+    print("Incorrect username or password. Try Again. \n")
+
+
+
+# Function to add a new product/order/supplier in txt.file
+def add(section):
+
+    # Save information to txt.file
+    def save_to_file(data, filename, keys, widths):
+        try:
+            with open(filename, "r") as f:
+                lines = f.readlines()
+        # If file does not exist yet, start with empty []
+        except FileNotFoundError:
+            lines = []
+
+        # If file does not exist, write mode, if file exist, ammend mode
+        with open(filename, 'a' if lines else 'w') as f:
+            # Check if file if empty (only write header if file is empty)
+            if not lines:
+                header = ":" + ":".join(f"{key:^{width}}" for key, width in zip(keys, widths)) + ":\n"
+                f.write(header)
+                f.write("-" * len(header.strip()) + "\n")
+
+            # Write information after header
+            row_line = ":" + ":".join(
+                f"{str(data.get(key, '')):^{width}}" for key, width in zip(keys, widths)) + ":\n"
+            f.write(row_line)
+
+    if section in ["product", "products"]:
+        # Main Function to add new a new product
+        def add_product():
+            #Alignment layout for information to be presented in table form
+            product_keys = ["Product ID", "Product Name", "Genre", "Era", "Language", "Artist", "In Stock", "Sold"]
+            product_widths = [12, 28, 11, 9, 15, 26, 11, 8]
+            filename = "products.txt"
+
+            while True:
+                print("\nADD a new product:")
+                # Prompt user for product details
+                product = {key: input(f"{key}: ").strip() for key in product_keys}
+
+                # Save the product to the file and print success message
+                save_to_file(product, filename, product_keys, product_widths)
+                print(f"Product added successfully to '{filename}'.")
+
+                # Allow user to add product/return to main menu
+                choice = input("\nDo you want to add another product? (Yes/No): ").strip().lower()
+                if choice == "no":
+                    print("Returning to main menu.")
+                    break
+                elif choice != "yes":
+                    print("Invalid option. Returning to main menu.")
+                    break
+        add_product()
+
+
+    elif section in ["order", "orders"]:
+        # Main Function to add new a new order
+        def add_order():
+            order_keys = ["Order ID", "Product ID", "Supplier ID", "Order Date", "Quantity", "Unit Price",
+                          "Total Price"]
+            order_widths = [11, 12, 13, 12, 10, 14, 15]
+            filename = "orders.txt"
+
+            while True:
+                print("\nADD a new order:")
+                # Prompt user for order details
+                order = {key: input(f"{key}: ").strip() for key in order_keys}
+
+                # Save the order to the file and print success message
+                save_to_file(order, filename, order_keys, order_widths)
+                print(f"Order added successfully to '{filename}'.")
+
+                # Allow user to add order/return to main menu
+                choice = input("\nDo you want to add another order? (Yes/No): ").strip().lower()
+                if choice == "no":
+                    print("Returning to main menu.")
+                    break
+                elif choice != "yes":
+                    print("Invalid option. Returning to main menu.")
+                    break
+        add_order()
+
+
+    elif section in ["supplier", "suppliers"]:
+        # Main Function to add new a new supplier
+        def add_supplier():
+            supplier_keys = ["Supplier ID", "Supplier Name", "Phone Number", "Email"]
+            supplier_widths = [13, 20, 16, 27]
+            filename = "suppliers.txt"
+
+            while True:
+                print("\nADD a new supplier:")
+                # Prompt user for supplier details
+                supplier = {key: input(f"{key}: ").strip() for key in supplier_keys}
+
+                # Save the supplier to the file and print success message
+                save_to_file(supplier, filename, supplier_keys, supplier_widths)
+                print(f"Supplier added successfully to '{filename}'.")
+
+                # Allow user to add order/return to main menu
+                choice = input("\nDo you want to add another supplier? (Yes/No): ").strip().lower()
+                if choice == "no":
+                    print("Returning to main menu.")
+                    break
+                elif choice != "yes":
+                    print("Invalid option. Returning to main menu.")
+                    break
+        add_supplier()
+
+# Function to edit/update information about product/order/supplier in txt.file
+def edit(section):
+
+    # Save data to file after user edit
+    def save_to_file(data, filename):
+        with open(filename, 'w') as file:
+            # Write table header
+            header = ":" + ":".join(
+                f"{key:^{width}}" for key, width in zip(section_keys, section_widths)) + ":\n"
+            file.write(header)
+            file.write("-" * len(header.strip()) + "\n")
+
+            # Each row of data(values)
+            for row in data:
+                row_line = ":" + ":".join(
+                    f"{str(row.get(key, '')):^{width}}" for key, width in
+                    zip(section_keys, section_widths)) + ":\n"
+                file.write(row_line)
+
+        print(f"Information has been updated successfully in file '{filename}'.")
+
+    # Load current information from file
+    def load_from_file(filename):
+        try:
+            with open(filename, 'r') as file:
+                lines = file.readlines()
+                # Star reading from 3rd line (1st 2 are headers)
+                data_lines = lines[2:]
+                data = []
+                for line in data_lines:
+                    values = [value.strip() for value in line.strip(":").split(":")]
+                    row = dict(zip(section_keys, values))
+                    data.append(row)
+                return data
+        except FileNotFoundError:
+            print("File not found. Starting with an empty dataset.")
+            return []
+
+    # Read and display current data for user to reference when editing
+    def display_data():
+
+        with open(filename, "r") as f:
+            for line in f:
+                print(line.strip(), end = "\n")
+
+
+    if section in ["product", "products"]:
+        # Alignment layout for information to be presented in table form
+        section_keys = ["Product ID", "Product Name", "Genre", "Era", "Language", "Artist", "In Stock", "Sold"]
+        section_widths = [12, 28, 11, 9, 15, 26, 11, 8]
+        filename = "products.txt"
+
+        # Give user choice to edit product information or pass
+        def edit_product(data):
+
+            while True:
+                choice = input(
+                    "\nEnter the Product ID of the product you want to edit, or press ENTER to finish: ").strip()
+                if choice.lower() == "":
+                    break
+
+                # Find the row with the given Product ID to edit
+                row = next((item for item in data if item["Product ID"] == choice), None)
+                if row:
+
+                    for key in section_keys[1:]:  # Product ID cannot be edited
+                        new_value = input(
+                            f"Enter new value for '{key}', press Enter to skip): ").strip()
+                        if new_value:
+                            row[key] = new_value
+                    print("\nRow updated successfully!")
+                else:
+                    print("Invalid Product ID. Please try again.")
+
+            return data
+
+        # Main edit function
+        def update_product():
+            filename = "products.txt"
+
+            # Load product information from file, else start with empty set
+            data = load_from_file(filename)
+
+            # Display current product information, allow for editing, then update
+            while True:
+                print("\nCurrent Product Information:")
+                display_data()
+
+                choice = input("\nDo you want to edit the data? (Yes/No): ").strip().lower()
+                if choice == 'yes':
+                    data = edit_product(data)
+                    save_to_file(data, filename)  # Save updates
+                elif choice == 'no':
+                    print("Exiting. Final data saved.")
+                    save_to_file(data, filename)
+                    break
+                else:
+                    print("Invalid choice. Please enter 'yes' or 'no'.")
+
+
+    elif section in ["order", "orders"]:
+        # Alignment layout for information to be presented in table form
+        section_keys = ["Order ID", "Product ID", "Order Date", "Order Status", "Total Price"]
+        section_widths = [11, 12, 12, 14, 13]
+
+        # Function to allow editing of order information
+        def edit_order(data):
+            while True:
+                choice = input(
+                    "\nEnter the Order ID of the order you want to edit, or press ENTER to finish: ").strip()
+                if choice.lower() == "":
+                    break
+
+                # Find the row with the given Order ID to edit
+                row = next((item for item in data if item["Order ID"] == choice), None)
+                if row:
+
+                    for key in section_keys[1:]:  # Order ID cannot be edited
+                        new_value = input(
+                            f"Enter new value for '{key}', press Enter to skip): ").strip()
+                        if new_value:
+                            row[key] = new_value
+                    print("\nRow updated successfully!")
+                else:
+                    print("Invalid Order ID. Please try again.")
+
+            return data
+
+        # Main edit function
+        def update_order():
+            filename = "orders.txt"
+
+            # Load order information from file, else start with empty set
+            data = load_from_file(filename)
+
+            # Display current order information, allow for editing, then update
+            while True:
+                print("\nCurrent Order Information:")
+                display_data()
+
+                choice = input("\nDo you want to edit the data? (Yes/No): ").strip().lower()
+                if choice == 'yes':
+                    data = edit_order(data)
+                    save_to_file(data, filename)  # Save updates
+                elif choice == 'no':
+                    print("Exiting. Final data saved.")
+                    save_to_file(data, filename)
+                    break
+                else:
+                    print("Invalid choice. Please enter 'yes' or 'no'.")
+
+
+    elif section in ["supplier", "suppliers"]:
+        # Alignment layout for information to be presented in table form
+        section_keys = ["Supplier ID", "Supplier Name", "Phone Number", "Email"]
+        section_widths = [13, 20, 16, 23]
+
+        # Function to allow editing of supplier information
+        def edit_supplier(data):
+            while True:
+                choice = input(
+                    "\nEnter the Supplier ID of the supplier you want to edit, or press ENTER to finish): ").strip()
+                if choice.lower() == "":
+                    break
+
+                # Find the row with the given Supplier ID to edit
+                row = next((item for item in data if item["Supplier ID"] == choice), None)
+                if row:
+
+                    for key in section_keys[1:]:  # Order ID cannot be edited
+                        new_value = input(
+                            f"Enter new value for '{key}', press Enter to skip): ").strip()
+                        if new_value:
+                            row[key] = new_value
+                    print("\nRow updated successfully!")
+                else:
+                    print("Invalid Supplier_ ID. Please try again.")
+
+            return data
+
+        # Main edit function
+        def update_supplier_():
+            filename = "supplier_s.txt"
+
+            # Load supplier_ information from file, else start with empty set
+            data = load_from_file(filename)
+
+            # Display current supplier_ information, allow for editing, then update
+            while True:
+                print("\nCurrent Supplier Information:")
+                display_data()
+
+                choice = input("\nDo you want to edit the data? (Yes/No): ").strip().lower()
+                if choice == 'yes':
+                    data = edit_supplier_(data)
+                    save_to_file(data, filename)  # Save updates
+                elif choice == 'no':
+                    print("Exiting. Final data saved.")
+                    save_to_file(data, filename)
+                    break
+                else:
+                    print("Invalid choice. Please enter 'yes' or 'no'.")
+
+
+# Function to output current content in txt.files
+def view(section):
+
+    def choice():
+        while True:
+            choice = input("\nDo you want to view another item? (Yes/No): ").strip().lower()
+            if choice == "yes":
+                view(section)
+            elif choice == "no":
+                print("Returning to main menu.")
+                break
+            elif choice != "yes":
+                print("Invalid option. Returning to main menu.")
+                break
+
+
+    # Read content in products.txt and print
+    if section in ["product", "products"]:
+        print("\n")
+        try:
+            with open("products.txt", "r") as f:
+                for line in f:
+                    # If products.txt is empty
+                    if len(line) ==0:
+                        print("No products to view.")
+                    else:
+                        print(line.strip(), end="\n")
+        except FileNotFoundError:
+            print("The file products.txt does not exist.")
+        except Exception as e:
+            print(f"An error occured: {e}")
+        #Allow user to view another item or return to main menu
+        choice()
+
+
+    # Read content in orders.txt and print
+    elif section in ["order", "orders"]:
+        print("\n")
+        try:
+            with open("orders.txt", "r") as f:
+                for line in f:
+                    # If orders.txt is empty
+                    if len(line) ==0:
+                        print("No orders to view.")
+                    else:
+                        print(line.strip(), end="\n")
+        except FileNotFoundError:
+            print("The file orders.txt does not exist.")
+        except Exception as e:
+            print(f"An error occured: {e}")
+        #Allow user to view another item or return to main menu
+        choice()
+
+    # Read content in supplier.txt and print
+    elif section in ["supplier", "suppliers"]:
+        print("\n")
+        try:
+            with open("suppliers.txt", "r") as f:
+                for line in f:
+                    # If suppliers.txt is empty
+                    if len(line) < 3:
+                        print("No suppliers to view.")
+                    else:
+                        print(line.strip(), end="\n")
+        except FileNotFoundError:
+            print("The file suppliers.txt does not exist.")
+        except Exception as e:
+            print(f"An error occured: {e}")
+        #Allow user to view another item or return to main menu
+        choice()
+
+    # Generate reports
+    elif section in ["report", "reports"]:
+
+        print("[1] Low Stock Report" )
+        print("[2] Excess Stock Report")
+        print("[3] Popular Albums Report")
+
+        report= int(input("\nWhich report would you like to view? Enter 1, 2 or 3: "))
+
+        product_keys = ["Product ID", "Product Name", "Genre", "Era", "Language", "Artist", "In Stock", "Sold"]
+        product_widths = [12, 28, 11, 9, 15, 26, 11, 8]
+        filename = "products.txt"
+
+        # Read data from products.txt
+        def read_products_from_file(filename):
+            try:
+                with open(filename, "r") as file:
+                    lines = file.readlines()
+
+                # Skip header and separator lines
+                value_lines = lines[2:]
+                products = []
+
+                for line in value_lines:
+                    line = line.strip(":").strip()
+                    fields = line.split(":")
+                    product = dict(zip(product_keys, [field.strip() for field in fields]))
+                    #Append, add dictionary to product list
+                    products.append(product)
+
+                return products
+            except FileNotFoundError:
+                print(f"The file '{filename}' does not exist.")
+                return []
+            except Exception as e:
+                print(f"An error occurred while reading the file: {e}")
+                return []
+
+        if report == 1:
+        # Function to generate low stock report
+            def low_stock(filename, threshold):
+                products = read_products_from_file(filename)
+                low_stock_products = []
+
+                for product in products:
+                    try:
+                        in_stock = int(product.get("In Stock", 0))  # Convert "In Stock" to an integer
+                        if in_stock < threshold:
+                            low_stock_products.append(product)
+                    except ValueError:
+                        print(f"Invalid stock value for product: {product.get('Product ID')}")
+
+                if low_stock_products:
+                    print("\nLow Stock Report:")
+                    header = ":" + ":".join(f"{key:^{width}}" for key, width in zip(product_keys, product_widths)) + ":"
+                    print(header)
+                    print("-" * len(header.strip()))
+                    for product in low_stock_products:
+                        print(":" + ":".join(
+                            f"{product.get(key, ''):^{width}}" for key, width in zip(product_keys, product_widths)) + ":")
+                        print("Make an order for the products above.")
+
+                    else:
+                        print("All products are well stocked.")
+            low_stock(filename, threshold=5)
+
+        elif report == 2:
+            # Function to generate excessive stock report.
+            def excess_stock(filename, threshold):
+                products = read_products_from_file(filename)
+                excess_stock_products = []
+
+                for product in products:
+                    try:
+                        in_stock = int(product.get("In Stock", 0))  # Convert "In Stock" to an integer
+                        if in_stock > threshold:
+                            excess_stock_products.append(product)
+                    except ValueError:
+                        print(f"Invalid stock value for product: {product.get('Product ID')}")
+
+                if excess_stock_products:
+                    print("\nExcess Stock Report:")
+                    header = ":" + ":".join(f"{key:^{width}}" for key, width in zip(product_keys, product_widths)) + ":"
+                    print(header)
+                    print("-" * len(header.strip()))
+                    for product in excess_stock_products:
+                        print(":" + ":".join(
+                            f"{product.get(key, ''):^{width}}" for key, width in zip(product_keys, product_widths)) + ":")
+                    print("There is no need to make an order for the products above.")
+
+                else:
+                    print("There is no products with excess stock.")
+
+            excess_stock(filename, threshold=20)
+
+        elif report ==3:
+            # Function: Popular Albums Report
+            def popular_albums(filename, threshold):
+                products = read_products_from_file(filename)
+                popular_products = []
+
+                for product in products:
+                    try:
+                        sold = int(product.get("Sold", 0))  # Convert "Sold" to an integer
+                        if sold > threshold:
+                            popular_products.append(product)
+                    except ValueError:
+                        print(f"Invalid sold value for product: {product.get('Product ID')}")
+
+                if popular_products:
+                    print("\nPopular Albums Report:")
+                    header = ":" + ":".join(f"{key:^{width}}" for key, width in zip(product_keys, product_widths)) + ":"
+                    print(header)
+                    print("-" * len(header.strip()))
+                    for product in popular_products:
+                        print(":" + ":".join(
+                            f"{product.get(key, ''):^{width}}" for key, width in zip(product_keys, product_widths)) + ":")
+                else:
+                    print("There are no product with high sales.")
+
+            popular_albums(filename, threshold=30)
+
+        else:
+            print("Invalid. Enter a number between 1 - 3")
+
+        # Allow user to view another item or return to main menu
+        choice()
+
+
+
+def main_menu():
+    while True:
+        print("\nWelcome!")
+        print("[1] ADD")
+        print("[2] EDIT")
+        print("[3] VIEW")
+        print("[4] QUIT")
+
+        try:
+            action = int(input("What would you like perform? Enter 1, 2, 3, or 4:  "))
+
+            if action == 1:
+                print("\n" + "   PRODUCTS    ORDERS    SUPPLIERS    ")
+                section = input("Which section would you like to add to? ").strip().lower()
+                add(section)
+
+            elif action == 2:
+                print("\n" + "   PRODUCTS    ORDERS    SUPPLIERS    ")
+                section = input("Which section would you like to edit? ").strip().lower()
+                edit(section)
+
+            elif action == 3:
+                print("\n" + "   PRODUCTS    ORDERS    SUPPLIERS    REPORTS    ")
+                section = input("Which section would you like to view? ").strip().lower()
+                view(section)
+
+            elif action == 4:
+                print("Exit System. Logging out...")
+                time.sleep(1)
+                break
+
+            else:
+                print("Invalid. Enter a number between 1 - 4.")
+
+        except ValueError:
+            print("Invalid input. Enter a valid number.")
+        except Exception as e:
+            print(f"An unexpected error occured: {e}")
+
+# Execute main program
+main_menu()
